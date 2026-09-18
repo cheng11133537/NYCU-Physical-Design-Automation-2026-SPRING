@@ -1,95 +1,117 @@
 # Physical Design Automation (PDA)
 
-本課程實作涵蓋 VLSI 實體設計自動化中的四個核心階段，包含 **電路分割、平面規劃、標準元件合法化與繞線樹建構**。
+This repository contains a series of programming assignments covering four representative problems in **VLSI Physical Design Automation**, including **circuit partitioning, symmetry-constrained floorplanning, standard-cell placement legalization, and rectilinear minimum spanning tree construction**.
 
-整體專案從 Hypergraph Partitioning 開始，逐步實作具對稱限制的 Floorplanning、Standard Cell Placement Legalization，最後以 Manhattan Distance 建立 Rectilinear Minimum Spanning Tree，練習圖論、幾何演算法、資料結構與啟發式最佳化方法在 EDA 問題中的應用。
-
----
-
-## 開發與測試環境
-
-* **作業系統：** Windows / Linux
-* **開發語言：** C++
-* **編譯器：** g++
-* **建置工具：** GNU Make
-* **輔助工具：** OpenROAD、Tcl、官方 Checker
-* **核心技術：** Hypergraph Partitioning、FM Algorithm、B*-tree、Contour Packing、Placement Legalization、Sweep Line、Kruskal MST、Disjoint Set Union
+The projects progress from hypergraph-based circuit partitioning to floorplanning under symmetry constraints, row-based placement legalization, and efficient Manhattan-distance spanning-tree construction. Through these assignments, the repository explores the application of **graph algorithms, computational geometry, data structures, heuristic optimization, and EDA tools** to physical design problems.
 
 ---
 
-## 專案導覽（Project Overview）
+## Development and Testing Environment
 
-### HW1：Balanced 3-Way Hypergraph Partitioning
-
-本作業將電路 Netlist 建模為 Hypergraph，並將 Cells 分配至三個 Partition。
-
-系統需在滿足各 Partition 面積平衡限制的條件下，盡可能降低跨越不同 Partition 的 Cut Nets 數量。
-
-**實作內容：**
-
-* 建立 Cell、Net 與 Partition 的 Hypergraph 資料結構
-* 根據 Balance Factor 控制各區域面積上下限
-* 使用多種初始分割策略產生不同初始解
-* 使用 Pairwise FM Refinement 改善 Cutsize
-* 透過 Gain Calculation 與 Best-Prefix Rollback 保留較佳移動結果
-* 搭配局部搜尋提升分割品質
+* **Operating Systems:** Windows / Linux
+* **Programming Language:** C++
+* **Compiler:** g++
+* **Build System:** GNU Make
+* **EDA / Supporting Tools:** OpenROAD, Tcl, official checkers
+* **Core Techniques:** Hypergraph Partitioning, FM Refinement, Multilevel Coarsening, B*-tree, Contour Packing, Simulated Annealing, Placement Legalization, Sweep Line, Kruskal's Algorithm, Disjoint Set Union
 
 ---
 
-### HW2：Symmetry-Constrained Floorplanning
+## Project Overview
 
-本作業處理具有對稱限制的 Floorplanning 問題。
+### HW1: Balanced 3-Way Hypergraph Partitioning
 
-除了需要避免 Blocks 重疊並降低 Floorplan 面積，也必須滿足 Symmetric Block Pair 與 Self-Symmetric Block 的配置限制。
+This assignment models a circuit netlist as a **hypergraph**, where cells are represented as vertices and nets are represented as hyperedges.
 
-**實作內容：**
+The objective is to divide all cells into three balanced partitions while minimizing the number of nets crossing multiple partitions.
 
-* 使用 B*-tree 表示 Blocks 之間的相對位置
-* 使用 Contour Structure 快速計算合法放置座標
-* 支援 Block Rotation
-* 建立 Symmetry Group 與共同對稱軸
-* 搜尋不同的群組排列與旋轉組合
-* 以 Floorplan Area 與合法性作為主要評估標準
+**Implemented features:**
 
----
-
-### HW3：Standard Cell Placement Legalization
-
-本作業實作 Standard Cell Legalizer，將存在重疊、未對齊或超出合法範圍的 Cells 移動至合法位置。
-
-目標是在滿足 Placement Rules 的前提下，盡可能降低 Cells 相對於原始位置的位移量。
-
-**實作內容：**
-
-* 根據 Placement Rows 建立合法放置區域
-* 使用 Free Segments 管理各 Row 的可用空間
-* 修正 Cell Overlap、Site Alignment 與 Row Alignment
-* 支援 Multi-Height Cells
-* 以 Manhattan Displacement 評估移動成本
-* 執行最終合法性檢查與位置修復
-* 使用 OpenROAD 與 Tcl Script 產生及驗證測試資料
+* Built hypergraph data structures for cells, nets, and partitions
+* Enforced partition-size constraints according to the specified balance factor
+* Implemented multiple randomized and degree-/weight-aware initial partitioning strategies
+* Applied **pairwise FM refinement** between partition pairs
+* Implemented gain computation and bucket-based candidate selection
+* Used **best-prefix rollback** to retain the best sequence of FM moves
+* Implemented **multilevel coarsening and uncoarsening**
+* Applied recursive refinement across multiple graph levels
+* Added guided V-cycle and multi-start optimization to further improve cutsize
+* Evaluated solution quality using the number of cut nets while preserving balance constraints
 
 ---
 
-### HW4：Rectilinear Minimum Spanning Tree Routing
+### HW2: Symmetry-Constrained Floorplanning
 
-本作業針對大量二維 Pins 建立 Rectilinear Minimum Spanning Tree。
+This assignment solves a floorplanning problem in which blocks must be placed without overlap while satisfying symmetry constraints.
 
-任兩點之間的 Edge Weight 使用 Manhattan Distance，目標是在連接所有 Pins 的情況下，最小化整棵 Tree 的總線長。
+In addition to minimizing the overall floorplan area, the placement must preserve the geometric relationships of **symmetric block pairs** and **self-symmetric blocks** with respect to their shared symmetry axes.
 
-**實作內容：**
+**Implemented features:**
 
-* 使用 Manhattan Distance 計算 Edge Weight
-* 避免建立完整的 `O(n²)` 點對圖
-* 透過座標轉換與 Sweep Line 產生 Candidate Edges
-* 處理具有相同座標的 Duplicate Pins
-* 使用 Kruskal Algorithm 建立 Minimum Spanning Tree
-* 使用 Disjoint Set Union 進行 Cycle Detection
-* 優化大型 Testcase 的輸入與記憶體使用效率
+* Represented block placement using a **B*-tree**
+* Used a **contour structure** to efficiently determine legal block coordinates
+* Supported block rotation
+* Modeled symmetry groups containing symmetric pairs and self-symmetric blocks
+* Constructed symmetry-aware local group layouts
+* Maintained a common symmetry axis for each symmetry group
+* Explored different block orders, group arrangements, rotations, and tree structures
+* Applied **Simulated Annealing** for floorplan optimization
+* Used multi-start and two-phase search strategies to improve solution quality
+* Applied deterministic local refinement after global search
+* Evaluated solutions primarily according to floorplan area and placement legality
 
 ---
 
-## 專案目錄結構（Repository Layout）
+### HW3: Standard Cell Placement Legalization
+
+This assignment implements a **standard-cell legalizer** that transforms an initially illegal placement into a legal one.
+
+The legalizer relocates cells that overlap, violate placement-site alignment, occupy blocked regions, or lie outside valid placement rows while attempting to minimize displacement from their original positions.
+
+**Implemented features:**
+
+* Parsed placement data extracted from OpenROAD
+* Constructed row-based legal placement regions
+* Managed available row space using **free-segment interval structures**
+* Accounted for macros, blockages, and other placement obstacles
+* Enforced site alignment and row alignment
+* Prevented cell overlap and die-boundary violations
+* Supported **multi-height standard cells**
+* Evaluated placement candidates using Manhattan displacement
+* Added a density-aware overflow penalty to discourage locally congested placement
+* Searched candidate positions across multiple rows and free segments
+* Rebuilt the placement when necessary to guarantee legality
+* Applied conservative row-local refinement for single-height cells
+* Performed final self-checks for overlap, alignment, and boundary legality
+* Generated placement commands as Tcl output for OpenROAD
+* Used OpenROAD and Tcl scripts to extract test data and verify placement legality
+
+---
+
+### HW4: Rectilinear Minimum Spanning Tree Construction
+
+This assignment constructs a **Rectilinear Minimum Spanning Tree (RMST)** for a large set of two-dimensional pins.
+
+The edge weight between two pins is defined by their **Manhattan distance**, and the objective is to connect all pins with minimum total spanning-tree cost.
+
+Instead of generating all possible \(O(n^2)\) edges, the implementation uses geometric properties of Manhattan MSTs to generate only a small set of candidate edges.
+
+**Implemented features:**
+
+* Used Manhattan distance as the edge-weight metric
+* Avoided construction of the complete \(O(n^2)\) graph
+* Applied coordinate transformations to cover multiple Manhattan directions
+* Used a **sweep-line algorithm** to generate useful nearest-neighbor candidate edges
+* Explicitly handled duplicate pins located at identical coordinates
+* Applied **Kruskal's algorithm** to construct the minimum spanning tree
+* Used **Disjoint Set Union (DSU)** for efficient connectivity and cycle detection
+* Implemented buffered fast input for large test cases
+* Reduced memory usage by storing only candidate edges rather than all point pairs
+* Optimized the implementation for large-scale input instances
+
+---
+
+## Repository Layout
 
 ```text
 NYCU-Physical-Design-Automation-2026-SPRING/
@@ -119,7 +141,9 @@ NYCU-Physical-Design-Automation-2026-SPRING/
     │   │   ├── main.cpp
     │   │   └── Makefile
     │   ├── testcase/
-    │   ├── OpenROAD scripts
+    │   ├── flow.tcl
+    │   ├── extract_v3.tcl
+    │   ├── OpenROAD tutorial materials
     │   └── p3_placement_v2.pdf
     │
     └── 2026_PDA_HW4/
@@ -133,23 +157,29 @@ NYCU-Physical-Design-Automation-2026-SPRING/
 
 ---
 
-## 技術重點整理
+## Technical Highlights
 
-* 實作 Balanced 3-Way Hypergraph Partitioning
-* 使用 FM Refinement 降低 Cutsize
-* 使用 B*-tree 與 Contour 完成 Floorplanning
-* 處理 Symmetric Pair 與 Self-Symmetric Block
-* 建立 Row-Based Standard Cell Legalizer
-* 修正 Cell Overlap、Site Alignment 與 Placement Boundary
-* 使用 Sweep Line 降低 RMST Candidate Edge 數量
-* 使用 Kruskal 與 Disjoint Set Union 建立 Minimum Spanning Tree
-* 針對大型測試資料進行時間與記憶體最佳化
+* Implemented balanced **3-way hypergraph partitioning**
+* Applied **multilevel coarsening / uncoarsening** and pairwise FM refinement
+* Used gain-based bucket selection and best-prefix rollback to reduce cutsize
+* Implemented **B*-tree-based floorplanning**
+* Used contour packing for efficient coordinate computation
+* Supported symmetric pairs and self-symmetric blocks
+* Applied **Simulated Annealing** and local refinement for floorplan optimization
+* Built a row-based standard-cell legalizer
+* Managed placement availability through free-segment interval structures
+* Supported obstacles and multi-height cells during legalization
+* Minimized Manhattan displacement while considering placement density
+* Integrated OpenROAD and Tcl for placement extraction and validation
+* Generated Manhattan MST candidate edges using coordinate transformation and sweep-line techniques
+* Constructed RMSTs using **Kruskal's algorithm and Disjoint Set Union**
+* Optimized runtime, input processing, and memory usage for large test cases
 
 ---
 
 ## Large File Notice
 
-HW4 部分大型 Testcase 超過 GitHub 的一般單檔大小限制，因此未上傳至 Repository，並已加入 `.gitignore`。
+Several large HW4 test-case files exceed GitHub's normal single-file size limit and are therefore excluded from the repository through `.gitignore`.
 
 ```text
 PDA/2026_PDA_HW4/testcase/case4/input.dat
@@ -163,10 +193,11 @@ PDA/2026_PDA_HW4/testcase/case7/input.dat
 ## Author
 
 **榮誠 邱**
-Student ID：314512065
+
+Student ID: 314512065
 
 ---
 
 ## Note
 
-This repository is for academic coursework and experiment record keeping.
+This repository is maintained for academic coursework, implementation practice, and experiment record keeping.
